@@ -1,0 +1,38 @@
+# Save the script into a file named 'mapreduce_combined.py'
+%%writefile mapreduce_combined.py
+
+# Importing required modules
+from collections import defaultdict  # Provides a dictionary-like object which assigns a default value if key is not found
+import sys  # Module to interact with the system, particularly to read from standard input (stdin)
+
+# Initialize a defaultdict with int as default factory
+# This means that any new key accessed will automatically have a default value of 0
+word_count = defaultdict(int)
+
+# Reading each line from the standard input
+for line in sys.stdin:
+    # Remove leading/trailing whitespace and convert to lowercase for case-insensitive matching
+    line = line.strip().lower()
+    
+    # Replace periods (.) with spaces to avoid punctuation affecting word splitting
+    line = line.replace(".", " ")
+    
+    # Split the line into a list of words based on whitespace
+    words = line.split()
+    
+    # Iterate through all words in the current line
+    for word in words:
+        # Increment the word's count by 1 in the dictionary
+        word_count[word] += 1
+
+# After processing all input lines, output each word along with its count
+for word, count in word_count.items():
+    # Print count and word separated by a tab
+    # This format (count first) could be useful for further sorting by count
+    print(f'{count}\t{word}')
+
+#########
+# This command simulates input to the Python script via a pipeline.
+# It sends the string "Hello World. Hello again." as input to the 'mapreduce_combined.py' script.
+# The 'echo' command outputs the string, and the pipe '|' sends it to the Python script through standard input (sys.stdin).
+!echo "Hello World. Hello again." | python mapreduce_combined.py

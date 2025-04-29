@@ -1,0 +1,45 @@
+# Save the following script into a file named 'mapreduce_log_processor.py'
+%%writefile mapreduce_log_processor.py
+
+# Importing required modules
+from collections import defaultdict  # Provides a dictionary-like object that gives default values for missing keys
+import sys  # Module to interact with system-specific parameters and functions, especially standard input (stdin)
+
+# Initialize a defaultdict where each new key (log level) will have a default value of 0
+log_count = defaultdict(int)
+
+# Read each line from the standard input (stdin)
+for line in sys.stdin:
+    # Remove leading and trailing whitespace characters from the line
+    line = line.strip()
+    
+    # Process only non-empty lines
+    if line:
+        # Split the line into parts (words) based on whitespace
+        parts = line.split()
+        
+        # Assume that the first word is the log level (e.g., INFO, ERROR, WARN)
+        log_level = parts[0].upper()  # Convert log level to uppercase to standardize
+        
+        # Increment the count of this particular log level
+        log_count[log_level] += 1
+
+# After processing all lines, output the count of each log level
+for log_level, count in log_count.items():
+    # Print the count and the log level, separated by a tab
+    print(f'{count}\t{log_level}')
+######
+# This command sends multiple lines of log data as input to the 'mapreduce_log_processor.py' script.
+# 
+# 'echo -e' enables interpretation of escape sequences like '\n' (new lines).
+# It outputs the following 5 lines:
+#   INFO Starting server
+#   ERROR Could not connect to database
+#   WARN Disk space low
+#   INFO Request completed
+#   ERROR User authentication failed
+#
+# The pipe symbol '|' takes this multi-line output and passes it to the Python script via standard input (sys.stdin).
+# 'python mapreduce_log_processor.py' runs the script, which processes the input, counts each log level, and prints the result.
+
+!echo -e "INFO Starting server\nERROR Could not connect to database\nWARN Disk space low\nINFO Request completed\nERROR User authentication failed" | python mapreduce_log_processor.py

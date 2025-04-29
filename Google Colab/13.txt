@@ -1,0 +1,71 @@
+from google.colab import files
+uploaded = files.upload()
+#####
+# Save this Python script to a file using the %%writefile magic command in Google Colab
+%%writefile mapreduce_weather.py
+
+# Importing necessary libraries
+from collections import defaultdict  # defaultdict automatically assigns default values to new keys
+import sys  # sys module is used here to read input directly from the terminal (stdin)
+
+# Initialize two defaultdicts:
+# - metrics_sum to accumulate total values for each weather metric (temperature, dew point, wind speed)
+# - metrics_count to keep track of how many valid entries were added for each metric
+metrics_sum = defaultdict(float)
+metrics_count = defaultdict(int)
+
+# Loop through each line of input from standard input (used when piped input is provided)
+for line in sys.stdin:
+    # Remove any leading/trailing whitespace including newline characters
+    line = line.strip()
+
+    # Skip processing if the line is empty
+    if line:
+        # Split the line into columns based on whitespace (tabs or spaces)
+        parts = line.split()
+
+        try:
+            # Extract relevant numeric values from specific columns
+            # These indexes are 0-based and depend on the structure of the input data file
+            # Temperature is assumed to be the 4th column (index 3)
+            temperature = float(parts[3])
+
+            # Dew Point is assumed to be the 5th column (index 4)
+            dew_point = float(parts[4])
+
+            # Wind Speed is assumed to be the 12th column (index 11)
+            wind_speed = float(parts[11])
+
+            # Add the extracted values to their respective sums
+            metrics_sum['temperature'] += temperature
+            metrics_sum['dew_point'] += dew_point
+            metrics_sum['wind_speed'] += wind_speed
+
+            # Increment the count for each metric
+            metrics_count['temperature'] += 1
+            metrics_count['dew_point'] += 1
+            metrics_count['wind_speed'] += 1
+
+        except ValueError:
+            # If there's any issue converting a column to float (e.g., missing data or non-numeric values),
+            # skip this line and move on to the next
+            continue
+
+# After all lines are processed, calculate and display the average for each metric
+for metric in ['temperature', 'dew_point', 'wind_speed']:
+    if metrics_count[metric] > 0:
+        # Compute average by dividing total sum by count
+        average = metrics_sum[metric] / metrics_count[metric]
+
+        # Output the result in tab-separated format: e.g., "temperature_average    25.36"
+        print(f'{metric}_average\t{average:.2f}')
+#####
+
+# This shell command uses a pipe to pass the contents of 'sample_weather.txt' as input to the Python script:
+!cat sample_weather.txt | python mapreduce_weather.py
+
+# Explanation:
+# - `cat sample_weather.txt`: Displays the contents of the file.
+# - `|`: A pipe that sends the output of `cat` as input (stdin) to the next command.
+# - `python mapreduce_weather.py`: Runs the Python script which reads from stdin, processes the data,
+#   calculates average temperature, dew point, and wind speed, and prints the results.
